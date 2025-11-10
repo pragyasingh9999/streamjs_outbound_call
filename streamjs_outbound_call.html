@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Amazon Connect Outbound CCP</title>
+  <script src="https://cdn.jsdelivr.net/npm/amazon-connect-streams/release/connect-streams-min.js"></script>
+</head>
+<body>
+  <div>
+    <input type="text" id="phone" placeholder="Enter phone number"/>
+    <button id="outbound-call-btn">Call</button>
+    <div id="status"></div>
+  </div>
+  <script>
+    connect.core.initCCP(document.createElement('div'), {
+      ccpUrl: 'https://levi-ackerman10.my.connect.aws/ccp-v2',
+      loginPopup: true,
+      region: 'us-east-1',
+      softphone: { allowFramedSoftphone: true }
+    });
+
+    let currentAgent = null;
+    connect.agent(agent => {
+      currentAgent = agent;
+    });
+
+    document.getElementById('outbound-call-btn').onclick = function() {
+      const phone = document.getElementById('phone').value;
+      const queueARN = "arn:aws:connect:us-east-1:637423409462:instance/e2b684e3-fbef-46aa-9529-e98a596ae469/queue/f32d0877-dcf8-46e2-90df-bbab4d65085b"; // Replace with actual queue ARN
+      if (!currentAgent) {
+        document.getElementById('status').innerText = "Agent not ready.";
+        return;
+      }
+      currentAgent.connect(phone, {
+        queueARN,
+        success: () => {
+          document.getElementById('status').innerText = "Call initiated!";
+        },
+        failure: (err) => {
+          document.getElementById('status').innerText = "Call failed: " + JSON.stringify(err);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
